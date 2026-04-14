@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>Login - Inventario Clínica</title>
+
+    <link rel="stylesheet" href="estilos.css">
+
+<style>
+
+/*  ICONO OJO */
+.eye-icon{
+    position:absolute;
+    right:10px;
+    top:50%;
+    transform:translateY(-50%);
+    cursor:pointer;
+    width:20px;
+    height:20px;
+    opacity:0.7;
+}
+.eye-icon:hover{
+    opacity:1;
+}
+
+/*  MODAL ERROR */
+.modal{
+    position:fixed;
+    top:0;
+    left:0;
+    width:100%;
+    height:100%;
+    background:rgba(0,0,0,0.4);
+    display:none;
+    justify-content:center;
+    align-items:center;
+    z-index:1000;
+}
+
+.modal-box{
+    background:white;
+    padding:25px;
+    border-radius:10px;
+    width:300px;
+    text-align:center;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+.modal-box h3{
+    margin-bottom:10px;
+    color:#d63031;
+}
+
+.modal-box button{
+    margin-top:15px;
+    padding:8px 20px;
+    border:none;
+    background:#00b894;
+    color:white;
+    border-radius:5px;
+    cursor:pointer;
+}
+
+.modal-box button:hover{
+    background:#019874;
+}
+
+</style>
+
+</head>
+
+<body class="login-body">
+
+<div class="login-container">
+    <div class="login-box">
+        <h2>Inventario Clínica</h2>
+        <p>Iniciar sesión</p>
+
+        <form id="loginForm" autocomplete="off">
+            
+            <div class="input-group">
+                <label>Usuario</label>
+                <input type="text" id="usuario" required autocomplete="off">
+            </div>
+
+            <div class="input-group">
+                <label>Contraseña</label>
+
+                <div style="position:relative;">
+                    <input type="password" id="password" required autocomplete="new-password" style="padding-right:40px;">
+                    
+                    <!--  ICONO SVG -->
+                    <svg onclick="togglePassword()" id="eyeIcon" class="eye-icon" viewBox="0 0 24 24">
+                        <path fill="black" d="M12 4.5C7.305 4.5 3.135 7.364 1.5 12c1.635 4.636 5.805 7.5 10.5 7.5s8.865-2.864 10.5-7.5C20.865 7.364 16.695 4.5 12 4.5zm0 12.5a5 5 0 1 1 0-10 5 5 0 0 1 0 10zm0-8a3 3 0 1 0 0 6 3 3 0 0 0 0-6z"/>
+                    </svg>
+                </div>
+
+            </div>
+
+            <button type="submit">Ingresar</button>
+
+        </form>
+    </div>
+</div>
+
+<!-- MODAL ERROR -->
+<div id="modalError" class="modal">
+    <div class="modal-box">
+        <h3>Error</h3>
+        <p>Usuario o contraseña incorrectos</p>
+        <button onclick="cerrarModal()">Aceptar</button>
+    </div>
+</div>
+
+<script>
+
+/* LIMPIAR CAMPOS */
+window.onload = function(){
+    document.getElementById("usuario").value = "";
+    document.getElementById("password").value = "";
+};
+
+/* LOGIN */
+document.getElementById("loginForm").addEventListener("submit", function(e){
+    e.preventDefault();
+
+    let user = document.getElementById("usuario").value.trim();
+    let pass = document.getElementById("password").value.trim();
+
+    if(user === "MEDICAMENTOS" && pass === "Medicamentostoto2026"){
+        window.location.href = "panel.html";
+    }
+    else if(user === "MATERIALES" && pass === "Materialestoto2026"){
+        window.location.href = "materiales.html";
+    }
+    else{
+        mostrarModal();
+    }
+});
+
+/* ENTER */
+document.addEventListener("keydown", function(e){
+    if(e.key === "Enter"){
+        e.preventDefault();
+        document.getElementById("loginForm").dispatchEvent(new Event("submit"));
+    }
+});
+
+/*  MOSTRAR / OCULTAR PASSWORD */
+function togglePassword(){
+    let input = document.getElementById("password");
+
+    if(input.type === "password"){
+        input.type = "text";
+    }else{
+        input.type = "password";
+    }
+}
+
+/*  MODAL */
+function mostrarModal(){
+    document.getElementById("modalError").style.display = "flex";
+}
+
+function cerrarModal(){
+    document.getElementById("modalError").style.display = "none";
+}
+
+</script>
+
+</body>
+</html>

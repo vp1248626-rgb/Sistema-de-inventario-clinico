@@ -1,0 +1,670 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Panel - Medicamentos</title>
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+.sidebar{
+    position: fixed;
+    left:0;
+    top:0;
+    height:100vh;
+    width:30%;
+}
+.main-content{
+    margin-left:30%;
+    height:100vh;
+    overflow-y:auto;
+    padding:50px;
+}
+.sugerencias{
+    background:white;
+    border-radius:10px;
+    box-shadow:0 5px 10px rgba(0,0,0,0.1);
+    margin-top:5px;
+    max-height:150px;
+    overflow-y:auto;
+}
+.sugerencias div{
+    padding:10px;
+    cursor:pointer;
+}
+.sugerencias div:hover{
+    background:#e6f9f6;
+}
+.btn-mini{
+    padding:6px 10px;
+    font-size:13px;
+    width:auto;
+}
+.botones-final{
+    display:flex;
+    gap:10px;
+    margin-top:15px;
+}
+</style>
+</head>
+
+<body class="panel-body">
+
+<div class="container">
+
+<div class="sidebar">
+<h2>Medicamentos</h2>
+
+<nav>
+<a href="#" onclick="mostrarInicio()">🏠 Inicio</a>
+<a href="#" onclick="mostrarAgregar()">📥 Agregar</a>
+<a href="#" onclick="mostrarNuevo()">🆕 Nuevo</a>
+<a href="#" onclick="mostrarSalida()">📤 Salida</a>
+<a href="#" onclick="mostrarInventario()">📊 Inventariar</a>
+<a href="movimientos.php">📄 Movimientos</a>
+</nav>
+
+<div class="logout">
+<button onclick="cerrarSesion()">Cerrar sesión</button>
+</div>
+</div>
+
+<div class="main-content">
+
+<div id="inicio">
+<h1>Bienvenido</h1>
+<p class="subtitulo">Sistema de inventario de medicamentos</p>
+</div>
+
+<!-- AGREGAR -->
+<div id="agregar" style="display:none;">
+<h1>Agregar medicamentos</h1>
+
+<div class="form-horizontal">
+<input type="text" id="buscarAgregar"
+onkeyup="buscarAgregarProducto()"
+onkeydown="if(event.key==='Enter'){event.preventDefault();enterAgregar();}">
+<button class="btn-mini" onclick="enterAgregar()">Agregar</button>
+</div>
+
+<div id="resultadoAgregar"></div>
+
+<div class="tabla-contenedor">
+<table id="tablaAgregar">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Existencia</th>
+<th>Nuevo</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button class="btn-mini confirmar" onclick="guardarCambiosAgregar()">💾 Guardar</button>
+</div>
+</div>
+
+<!-- NUEVO -->
+<div id="nuevo" style="display:none;">
+<h1>Nuevo medicamento</h1>
+
+<div class="form-horizontal">
+<input type="text" id="codigo" placeholder="Código">
+<input type="text" id="nombre" placeholder="Nombre">
+<input type="text" id="lote" placeholder="Lote">
+<input type="date" id="caducidad">
+<input type="number" id="cantidad" placeholder="Cantidad"
+onkeydown="if(event.key==='Enter'){event.preventDefault();agregarProductoEnter();}">
+<button class="btn-mini" onclick="agregarProducto()">Agregar</button>
+</div>
+
+<div class="tabla-contenedor">
+<table id="tablaProductos">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Cantidad</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<div class="botones-final">
+<button class="btn-mini confirmar" onclick="guardarNuevoInventario()">💾 Guardar</button>
+<button class="btn-mini" onclick="exportarExcel('tablaProductos')">⬇ Descargar</button>
+</div>
+</div>
+</div>
+
+<!-- SALIDA -->
+<div id="salida" style="display:none;">
+<h1>Salida</h1>
+
+<div class="form-horizontal">
+<input type="text" id="buscar"
+onkeydown="if(event.key==='Enter'){event.preventDefault();enterSalida();}">
+<button class="btn-mini" onclick="buscarProducto()">Buscar</button>
+<button class="btn-mini" onclick="enterSalida()">Agregar</button>
+</div>
+
+<div id="resultadoBusqueda"></div>
+
+<div class="tabla-contenedor">
+<table id="tablaSalida">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Existencia</th>
+<th>Cantidad</th>
+<th></th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button class="btn-mini confirmar" onclick="darSalida()">Confirmar salida</button>
+<button class="btn-mini" onclick="exportarExcel('tablaSalida')">⬇ Descargar</button>
+</div>
+</div>
+
+<!-- INVENTARIO -->
+<div id="inventariar" style="display:none;">
+<h1>Inventariar</h1>
+
+<div class="form-horizontal">
+<input type="text" id="buscarInventario"
+onkeyup="mostrarSugerencias()"
+onkeydown="if(event.key==='Enter'){event.preventDefault();enterInventario();}">
+</div>
+
+<div id="listaSugerencias" class="sugerencias"></div>
+
+<div class="tabla-contenedor">
+<h2>Edición</h2>
+
+<table id="tablaCaptura">
+<tbody></tbody>
+</table>
+
+</div>
+
+<div class="tabla-contenedor">
+<h2>Inventario completo</h2>
+
+<table id="tablaGeneral">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Stock</th>
+</tr>
+</thead>
+<tbody></tbody>
+</table>
+
+<button class="btn-mini" onclick="exportarExcel('tablaGeneral')">⬇ Descargar</button>
+</div>
+</div>
+
+</div>
+</div>
+
+<!--  MODAL -->
+<div id="modalNoti" class="modal">
+    <div class="modal-box">
+        <h3 id="tituloNoti">Mensaje</h3>
+        <p id="mensajeNoti">Texto</p>
+        <button onclick="cerrarModal()">Aceptar</button>
+    </div>
+</div>
+
+<script>
+
+function mostrarNoti(msg, tipo="ok"){
+    let modal = document.getElementById("modalNoti");
+    let titulo = document.getElementById("tituloNoti");
+    let mensaje = document.getElementById("mensajeNoti");
+
+    mensaje.innerText = msg;
+
+    if(tipo === "error"){
+        titulo.innerText = "Error";
+        titulo.style.color = "#e74c3c";
+    }else{
+        titulo.innerText = "Correcto";
+        titulo.style.color = "#2ecc71";
+    }
+
+    modal.style.display = "flex";
+}
+function cerrarModal(){
+    document.getElementById("modalNoti").style.display = "none";
+}
+
+/*  CARGA AUTOMÁTICA */
+window.onload = function(){
+    cargarInventarioBD();
+};
+function cerrarNoti(){
+    let n = document.getElementById("notificacion");
+    n.style.display = "none";
+
+    n.classList.remove("show");
+n.style.display="none";
+}
+
+/* CONTROL */
+function cerrarSesion(){window.location.href="index.html";}
+function ocultarTodo(){
+inicio.style.display="none";
+agregar.style.display="none";
+nuevo.style.display="none";
+salida.style.display="none";
+inventariar.style.display="none";
+}
+function mostrarInicio(){ocultarTodo();inicio.style.display="block";}
+function mostrarAgregar(){ocultarTodo();agregar.style.display="block";cargarInventarioBD();}
+function mostrarNuevo(){ocultarTodo();nuevo.style.display="block";}
+function mostrarSalida(){ocultarTodo();salida.style.display="block";cargarInventarioBD();}
+function mostrarInventario(){ocultarTodo();inventariar.style.display="block";cargarInventarioBD();}
+
+/* BD GLOBAL */
+let inventarioGlobal=[];
+
+function cargarInventarioBD(){
+fetch("obtener_inventario.php?tipo=medicamento")
+.then(res=>res.json())
+.then(data=>{
+    if(data.status==="ok"){
+        inventarioGlobal=data.data;
+        cargarInventario();
+    }
+})
+.catch(err=>console.error(err));
+}
+
+function cargarInventario(){
+    let t = tablaGeneral.querySelector("tbody");
+    t.innerHTML = "";
+
+    let hoy = new Date();
+    hoy.setHours(0,0,0,0); //  IMPORTANTE
+
+    inventarioGlobal.forEach(p=>{
+
+        let f = t.insertRow();
+        let clase = "";
+
+        if(!p.caducidad || p.caducidad === "0000-00-00" || p.caducidad === null){
+            clase = "azul";
+        }else{
+            let partes = p.caducidad.split("-");
+            let fechaCad = new Date(partes[0], partes[1] - 1, partes[2]);
+
+            let diff = (fechaCad - hoy) / (1000 * 60 * 60 * 24);
+
+            if(diff > 365){
+                clase = "verde";
+            }else if(diff > 180){
+                clase = "amarillo";
+            }else{
+                clase = "rojo";
+            }
+        }
+
+        f.classList.add(clase);
+
+        f.innerHTML = `
+        <td>${p.codigo}</td>
+        <td>${p.nombre}</td>
+        <td>${p.lote}</td>
+        <td>${p.caducidad ?? "Sin caducidad"}</td>
+        <td>${p.stock}</td>
+        `;
+    });
+}
+
+/* ENTER */
+let bloqueo=false;
+function permitirEnter(fn){
+if(bloqueo)return;
+bloqueo=true;
+fn();
+setTimeout(()=>bloqueo=false,300);
+}
+
+/* NUEVO */
+function agregarProducto(){
+let c=codigo.value,n=nombre.value,l=lote.value,ca=caducidad.value,q=cantidad.value;
+if(n==""||q=="")return;
+
+let f=tablaProductos.querySelector("tbody").insertRow();
+f.innerHTML=`<td>${c}</td><td>${n}</td><td>${l}</td><td>${ca}</td><td>${q}</td>
+<td><button onclick="this.closest('tr').remove()">❌</button></td>`;
+
+codigo.value="";nombre.value="";lote.value="";caducidad.value="";cantidad.value="";
+}
+function agregarProductoEnter(){permitirEnter(agregarProducto);}
+
+function guardarNuevoInventario(){
+let filas=document.querySelectorAll("#tablaProductos tbody tr");
+
+Promise.all([...filas].map(f=>{
+let datos={
+codigo:f.cells[0].innerText,
+nombre:f.cells[1].innerText,
+lote:f.cells[2].innerText,
+caducidad:f.cells[3].innerText,
+cantidad:f.cells[4].innerText,
+tipo:"medicamento"
+};
+
+return fetch("guardar_producto.php",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:new URLSearchParams(datos)
+});
+}))
+.then(()=>{
+mostrarNoti("Guardado correctamente");
+tablaProductos.querySelector("tbody").innerHTML="";
+cargarInventarioBD();
+});
+}
+
+/*  BUSCAR AGREGAR (CORREGIDO) */
+function buscarAgregarProducto(){
+let v = buscarAgregar.value.toLowerCase();
+
+let resultados = inventarioGlobal.filter(x =>
+    x.nombre.toLowerCase().includes(v) ||
+    x.codigo.toLowerCase().includes(v) ||
+    x.lote.toLowerCase().includes(v)
+);
+
+if(resultados.length > 0){
+
+let html = `
+<table border="1" width="100%" cellpadding="5">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Stock</th>
+</tr>
+</thead>
+<tbody>
+`;
+
+resultados.forEach(p=>{
+html += `
+<tr onclick="window.temp='${p.codigo}'" style="cursor:pointer">
+<td>${p.codigo}</td>
+<td>${p.nombre}</td>
+<td>${p.lote}</td>
+<td>${p.caducidad}</td>
+<td>${p.stock}</td>
+</tr>
+`;
+});
+
+html += "</tbody></table>";
+
+resultadoAgregar.innerHTML = html;
+
+}else{
+resultadoAgregar.innerHTML = "";
+}
+}
+
+function enterAgregar(){
+
+if(!window.temp){
+mostrarNoti("Selecciona un medicamento primero");
+return;
+}
+
+permitirEnter(()=>agregarFilaAgregar(window.temp));
+}
+
+function agregarFilaAgregar(c){
+let p=inventarioGlobal.find(x=>x.codigo==c);
+if(!p)return;
+
+resultadoAgregar.innerHTML="";
+buscarAgregar.value="";
+window.temp=null;
+
+let t=tablaAgregar.querySelector("tbody");
+
+for(let row of t.rows){if(row.cells[0].innerText==c)return;}
+
+let f=t.insertRow();
+f.innerHTML=`<td>${p.codigo}</td><td>${p.nombre}</td><td>${p.lote}</td><td>${p.caducidad}</td>
+<td>${p.stock}</td><td><input value="1"></td>
+<td><button onclick="this.closest('tr').remove()">❌</button></td>`;
+
+resultadoAgregar.innerHTML="";
+buscarAgregar.value="";
+window.temp=null;
+}
+
+function guardarCambiosAgregar(){
+Promise.all([...document.querySelectorAll("#tablaAgregar tbody tr")].map(f=>{
+let datos={
+codigo:f.cells[0].innerText,
+lote:f.cells[2].innerText,
+caducidad:f.cells[3].innerText,
+cantidad:f.cells[5].querySelector("input").value,
+tipo:"medicamento"
+};
+buscarAgregar.value="";
+resultadoAgregar.innerHTML="";
+window.temp=null;
+
+return fetch("entrada.php",{
+method:"POST",
+headers:{"Content-Type":"application/x-www-form-urlencoded"},
+body:new URLSearchParams(datos)
+});
+}))
+.then(()=>{
+tablaAgregar.querySelector("tbody").innerHTML="";
+mostrarNoti("Entrada guardada");
+cargarInventarioBD();
+});
+}
+
+/* SALIDA */
+function buscarProducto(){
+let v = buscar.value.toLowerCase();
+
+let resultados = inventarioGlobal.filter(x =>
+    x.nombre.toLowerCase().includes(v) ||
+    x.codigo.toLowerCase().includes(v) ||
+    x.lote.toLowerCase().includes(v)
+);
+
+if(resultados.length > 0){
+
+let html = `
+<table border="1" width="100%" cellpadding="5">
+<thead>
+<tr>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Stock</th>
+</tr>
+</thead>
+<tbody>
+`;
+
+resultados.forEach(p=>{
+html += `
+<tr onclick="window.tempSalida='${p.codigo}'" style="cursor:pointer">
+<td>${p.codigo}</td>
+<td>${p.nombre}</td>
+<td>${p.lote}</td>
+<td>${p.caducidad}</td>
+<td>${p.stock}</td>
+</tr>
+`;
+});
+
+html += "</tbody></table>";
+
+resultadoBusqueda.innerHTML = html;
+
+}else{
+resultadoBusqueda.innerHTML = "";
+}
+}
+
+function enterSalida(){permitirEnter(()=>agregarASalida(window.tempSalida));}
+
+function agregarASalida(c){
+let p=inventarioGlobal.find(x=>x.codigo==c);
+if(!p)return;
+
+let t=tablaSalida.querySelector("tbody");
+
+for(let row of t.rows){if(row.cells[0].innerText==c)return;}
+
+let f=t.insertRow();
+f.innerHTML=`<td>${p.codigo}</td><td>${p.nombre}</td><td>${p.lote}</td><td>${p.caducidad}</td>
+<td>${p.stock}</td><td><input value="1"></td>
+<td><button onclick="this.closest('tr').remove()">❌</button></td>`;
+}
+
+function darSalida(){
+
+    let filas = document.querySelectorAll("#tablaSalida tbody tr");
+
+    if(filas.length === 0){
+        mostrarNoti("No hay productos para salida", "error");
+        return;
+    }
+
+    for(let f of filas){
+    let cad = f.cells[3].innerText;
+    if(cad === "Sin caducidad" || cad === ""){
+    cad = null;
+}
+
+    if(cad){
+        let partes = cad.split("-");
+        let fechaCad = new Date(partes[0], partes[1]-1, partes[2]);
+
+        let hoy = new Date();
+        hoy.setHours(0,0,0,0);
+
+        if(fechaCad < hoy){
+            mostrarNoti("No puedes sacar medicamentos caducados", "error");
+            return;
+        }
+    }
+}
+
+    Promise.all([...filas].map(f => {
+        return fetch("salida_producto.php", {
+            method: "POST",
+            headers: {"Content-Type": "application/x-www-form-urlencoded"},
+            body: JSON.stringify({
+                codigo: f.cells[0].innerText,
+                cantidad: f.cells[5].querySelector("input").value,
+                tipo: "medicamento"
+            })
+        });
+    }))
+    .then(() => {
+        // limpiar tabla
+        document.querySelector("#tablaSalida tbody").innerHTML = "";
+
+        // recargar inventario
+        cargarInventarioBD();
+
+        // notificación
+        mostrarNoti("Salida realizada");
+
+        //  limpiar búsqueda (IMPORTANTE)
+        if(typeof buscar !== "undefined"){
+            buscar.value = "";
+        }
+
+        if(typeof resultadoBusqueda !== "undefined"){
+            resultadoBusqueda.innerHTML = "";
+        }
+
+        window.tempSalida = null;
+    })
+    .catch(() => {
+        mostrarNoti("Error al realizar salida", "error");
+    });
+
+}
+
+
+/* INVENTARIO */
+function mostrarSugerencias(){
+let v=buscarInventario.value.toLowerCase();
+listaSugerencias.innerHTML="";
+
+inventarioGlobal.forEach(p=>{
+if(
+p.nombre.toLowerCase().includes(v) ||
+p.codigo.toLowerCase().includes(v) ||
+p.lote.toLowerCase().includes(v)
+){
+listaSugerencias.innerHTML+=`<div onclick="agregarFila('${p.codigo}')">${p.nombre}</div>`;
+}
+});
+}
+
+function enterInventario(){
+permitirEnter(()=>{
+let v=buscarInventario.value.toLowerCase();
+let p=inventarioGlobal.find(x=>x.nombre.toLowerCase().includes(v)||x.codigo.toLowerCase().includes(v));
+if(p)agregarFila(p.codigo);
+});
+}
+
+function agregarFila(c){
+let p=inventarioGlobal.find(x=>x.codigo==c);
+if(!p)return;
+
+let t=tablaCaptura.querySelector("tbody");
+t.innerHTML="";
+let f=t.insertRow();
+f.innerHTML=`<td>${p.codigo}</td><td>${p.nombre}</td><td>${p.lote}</td><td>${p.caducidad}</td><td>${p.stock}</td>`;
+}
+
+/* EXCEL */
+function exportarExcel(tablaID){
+let tabla=document.getElementById(tablaID).outerHTML;
+let a=document.createElement("a");
+a.href='data:application/vnd.ms-excel,'+encodeURIComponent(tabla);
+a.download="medicamentos.xls";
+a.click();
+}
+
+</script>
+
+</body>
+</html>

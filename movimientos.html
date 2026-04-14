@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+<meta charset="UTF-8">
+<title>Movimientos - Inventario</title>
+<link rel="stylesheet" href="estilos.css">
+
+<style>
+.sidebar{
+    position: fixed;
+    left:0;
+    top:0;
+    height:100vh;
+    width:30%;
+}
+.main-content{
+    margin-left:30%;
+    height:100vh;
+    overflow-y:auto;
+    padding:50px;
+}
+.filtros{
+    display:flex;
+    gap:10px;
+    margin-bottom:20px;
+}
+.btn{
+    padding:8px 15px;
+    cursor:pointer;
+}
+</style>
+</head>
+
+<body class="panel-body">
+
+<div class="container">
+
+<!-- SIDEBAR -->
+<div class="sidebar">
+<h2>Movimientos</h2>
+
+<nav>
+<a href="panel.html">🏠 Volver al panel</a>
+</nav>
+
+<div class="logout">
+<button onclick="cerrarSesion()">Cerrar sesión</button>
+</div>
+</div>
+
+<!-- CONTENIDO -->
+<div class="main-content">
+
+<h1>Historial de Movimientos</h1>
+
+<!-- FILTROS -->
+<div class="filtros">
+<input type="date" id="fechaInicio">
+<input type="date" id="fechaFin">
+<button class="btn" onclick="filtrar()">Filtrar</button>
+<button class="btn" onclick="imprimir()">🖨 Imprimir</button>
+<button class="btn" onclick="exportarExcel()">⬇ Excel</button>
+</div>
+
+<!-- TABLA -->
+<div class="tabla-contenedor">
+<table id="tablaMovimientos">
+<thead>
+<tr>
+<th>Fecha</th>
+<th>Tipo</th>
+<th>Código</th>
+<th>Nombre</th>
+<th>Lote</th>
+<th>Caducidad</th>
+<th>Cantidad</th>
+</tr>
+</thead>
+<tbody>
+
+<!-- DATOS DEMO -->
+<tr>
+<td>2026-04-07</td>
+<td>Entrada</td>
+<td>123</td>
+<td>Paracetamol</td>
+<td>A1</td>
+<td>2026-12-01</td>
+<td>10</td>
+</tr>
+
+<tr>
+<td>2026-04-07</td>
+<td>Salida</td>
+<td>456</td>
+<td>Amoxicilina</td>
+<td>B2</td>
+<td>2027-05-10</td>
+<td>5</td>
+</tr>
+
+</tbody>
+</table>
+</div>
+
+</div>
+</div>
+
+<script>
+
+/* CERRAR SESION */
+function cerrarSesion(){
+    window.location.href="index.html";
+}
+
+/* FILTRAR POR FECHA */
+function filtrar(){
+let inicio=document.getElementById("fechaInicio").value;
+let fin=document.getElementById("fechaFin").value;
+
+let filas=document.querySelectorAll("#tablaMovimientos tbody tr");
+
+filas.forEach(f=>{
+let fecha=f.cells[0].innerText;
+
+if((!inicio || fecha>=inicio) && (!fin || fecha<=fin)){
+    f.style.display="";
+}else{
+    f.style.display="none";
+}
+});
+}
+
+/* IMPRIMIR */
+function imprimir(){
+window.print();
+}
+
+/* EXPORTAR EXCEL */
+function exportarExcel(){
+let tabla=document.getElementById("tablaMovimientos").outerHTML;
+let a=document.createElement("a");
+a.href='data:application/vnd.ms-excel,'+encodeURIComponent(tabla);
+a.download="movimientos.xls";
+a.click();
+}
+
+</script>
+
+</body>
+</html>
